@@ -1,9 +1,8 @@
 
 # Video Editor
 
-This app contains basic functionality to fast forward, slowmo and reverse either the whole input video or a specific part of the video.
-convert video to gif
-mute video sound
+This app contains basic functionality to fast forward, slowmo and reverse either the whole input video or a specific part of the video,
+convert video to gif, mute video sound
 <br>
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/raghavtilak)
 

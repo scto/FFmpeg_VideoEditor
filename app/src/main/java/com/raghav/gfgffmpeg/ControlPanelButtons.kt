@@ -24,9 +24,11 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun ControlPanelButtons(
-    firstClick: () -> Unit,
-    secondClick: () -> Unit,
-    thirdClick: () -> Unit
+    slowClick: () -> Unit,
+    reverseClick: () -> Unit,
+    flashClick: () -> Unit,
+    gifClick: () -> Unit,
+    muteClick: () -> Unit,
 ) {
     Column {
         Text("Tap to add effects", style = TextStyle(color = Color.White, fontSize = 14.sp))
@@ -37,9 +39,19 @@ fun ControlPanelButtons(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            SingleToolIcon(R.drawable.icon_effect_slow, "Slow Motion") { firstClick() }
-            SingleToolIcon(R.drawable.icon_effect_time, "Reverse") { secondClick() }
-            SingleToolIcon(R.drawable.icon_effect_repeatedly, "Flash") { thirdClick() }
+            SingleToolIcon(R.drawable.icon_effect_slow, "Slow Motion") { slowClick() }
+            SingleToolIcon(R.drawable.icon_effect_time, "Reverse") { reverseClick() }
+            SingleToolIcon(R.drawable.icon_effect_repeatedly, "Flash") { flashClick() }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            SingleToolIcon(R.drawable.icon_effect_gif, "Video to gif") { gifClick() }
+            SingleToolIcon(R.drawable.icon_effect_mute, "Mute video") { muteClick() }
         }
     }
 }
@@ -65,5 +77,5 @@ fun SingleToolIcon(@DrawableRes icon: Int, text: String, onClick: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun ControlPanelButtonsPreview() {
-    ControlPanelButtons({}, {}, {})
+    ControlPanelButtons({}, {}, {}, {}, {})
 }

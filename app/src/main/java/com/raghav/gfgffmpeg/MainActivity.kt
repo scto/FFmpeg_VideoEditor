@@ -103,7 +103,7 @@ class MainActivity : AppCompatActivity() {
                     binding.videoView.seekTo(videoSelectedLowerVal.floatValue.toInt() * 1000)
                 }
                 ControlPanelButtons(
-                    firstClick = {
+                    slowClick = {
                         if (input_video_uri != null) {
                             slowMotion(
                                 videoSelectedLowerVal.floatValue.toInt() * 1000,
@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity() {
                         )
                             .show()
                     },
-                    secondClick = {
+                    reverseClick = {
                         if (input_video_uri != null) {
                             reverse(
                                 videoSelectedLowerVal.floatValue.toInt() * 1000,
@@ -129,9 +129,35 @@ class MainActivity : AppCompatActivity() {
                         )
                             .show()
                     },
-                    thirdClick = {
+                    flashClick = {
                         if (input_video_uri != null) {
                             fastForward(
+                                videoSelectedLowerVal.floatValue.toInt() * 1000,
+                                videoSelectedUpperVal.floatValue.toInt() * 1000
+                            )
+                        } else Toast.makeText(
+                            this@MainActivity,
+                            "Please upload video",
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
+                    },
+                    gifClick = {
+                        if (input_video_uri != null) {
+                            videoGif(
+                                videoSelectedLowerVal.floatValue.toInt() * 1000,
+                                videoSelectedUpperVal.floatValue.toInt() * 1000
+                            )
+                        } else Toast.makeText(
+                            this@MainActivity,
+                            "Please upload video",
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
+                    },
+                    muteClick = {
+                        if (input_video_uri != null) {
+                            muteVideo(
                                 videoSelectedLowerVal.floatValue.toInt() * 1000,
                                 videoSelectedUpperVal.floatValue.toInt() * 1000
                             )
@@ -211,6 +237,20 @@ class MainActivity : AppCompatActivity() {
         val file = File(folder, System.currentTimeMillis().toString() + ".mp4")
         val exe =
             "-y -i $input_video_uri -filter_complex [0:v]trim=0:${endMs / 1000},setpts=PTS-STARTPTS[v1];[0:v]trim=${startMs / 1000}:${endMs / 1000},reverse,setpts=PTS-STARTPTS[v2];[0:v]trim=${startMs / 1000},setpts=PTS-STARTPTS[v3];[v1][v2][v3]concat=n=3:v=1 -b:v 2097k -vcodec mpeg4 -crf 0 -preset superfast ${file.absolutePath}"
+        executeFfmpegCommand(exe, file.absolutePath)
+    }
+
+    private fun videoGif(startMs: Int, endMs: Int){
+        val folder = cacheDir
+        val file = File(folder, System.currentTimeMillis().toString() + ".mp4")
+        val exe = "-y -ss ${startMs / 1000} -t ${(endMs - startMs) / 1000} -i $input_video_uri -t 10 -r 24 ${file.absolutePath}"
+        executeFfmpegCommand(exe, file.absolutePath)
+    }
+
+    private fun muteVideo(startMs: Int, endMs: Int){
+        val folder = cacheDir
+        val file = File(folder, System.currentTimeMillis().toString() + ".mp4")
+        val exe = "-y -ss ${startMs / 1000} -t ${(endMs - startMs) / 1000} -i $input_video_uri -f gif -b 2000k -r 10 -s 320x240 ${file.absolutePath}"
         executeFfmpegCommand(exe, file.absolutePath)
     }
 

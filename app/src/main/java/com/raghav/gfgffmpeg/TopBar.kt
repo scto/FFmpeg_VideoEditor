@@ -11,6 +11,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -40,7 +41,7 @@ fun TopBar(
         Button(onClick = {
             saveClick()
         }) {
-            Icon(Icons.Default.ThumbUp, contentDescription = null)
+            Icon(Icons.Default.Done, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text("Save")
         }

@@ -250,7 +250,7 @@ class MainActivity : AppCompatActivity() {
     private fun muteVideo(startMs: Int, endMs: Int){
         val folder = cacheDir
         val file = File(folder, System.currentTimeMillis().toString() + ".mp4")
-        val exe = "-y -ss ${startMs / 1000} -t ${(endMs - startMs) / 1000} -i $input_video_uri -f gif -b 2000k -r 10 -s 320x240 ${file.absolutePath}"
+        val exe = "-i $input_video_uri -af \"volume=enable='between(t, ${startMs / 1000}, ${endMs / 1000})':volume=0\" ${file.absolutePath}"
         executeFfmpegCommand(exe, file.absolutePath)
     }
 

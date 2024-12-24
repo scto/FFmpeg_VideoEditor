@@ -29,6 +29,7 @@ fun ControlPanelButtons(
     flashClick: () -> Unit,
     gifClick: () -> Unit,
     muteClick: () -> Unit,
+    textClick: () -> Unit,
 ) {
     Column {
         Text("Tap to add effects", style = TextStyle(color = Color.White, fontSize = 14.sp))
@@ -52,6 +53,7 @@ fun ControlPanelButtons(
         ) {
             SingleToolIcon(R.drawable.icon_effect_gif, "Video to gif") { gifClick() }
             SingleToolIcon(R.drawable.icon_effect_mute, "Mute video") { muteClick() }
+            SingleToolIcon(R.drawable.icon_effect_text, "Add text") { textClick() }
         }
     }
 }
@@ -77,5 +79,5 @@ fun SingleToolIcon(@DrawableRes icon: Int, text: String, onClick: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun ControlPanelButtonsPreview() {
-    ControlPanelButtons({}, {}, {}, {}, {})
+    ControlPanelButtons({}, {}, {}, {}, {}, {})
 }

@@ -1,15 +1,26 @@
 package com.raghav.gfgffmpeg
 
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.ProgressDialog
+import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.MotionEvent
+import android.view.View
+import android.view.inputmethod.InputMethodManager
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.arthenica.ffmpegkit.FFmpegKitConfig
@@ -71,7 +82,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -92,6 +103,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.composeControlPanel.setContent {
             Column {
+                var text by remember { mutableStateOf("") }
                 ScrubberPanel(
                     lowerValue = videoSelectedLowerVal.floatValue,
                     upperValue = videoSelectedUpperVal.floatValue,
@@ -102,6 +114,14 @@ class MainActivity : AppCompatActivity() {
                     videoSelectedUpperVal.floatValue = upper
                     binding.videoView.seekTo(videoSelectedLowerVal.floatValue.toInt() * 1000)
                 }
+                AddTextPanel(text = text, onTextChange = { newText ->
+                    text = newText
+                }, onClickDone = { newText ->
+                    binding.editableText.visibility = View.VISIBLE
+                    binding.editableText.text = newText
+                    hideKeyboard(this@MainActivity)
+                    text = ""
+                })
                 ControlPanelButtons(
                     slowClick = {
                         if (input_video_uri != null) {
@@ -167,6 +187,16 @@ class MainActivity : AppCompatActivity() {
                             Toast.LENGTH_LONG
                         )
                             .show()
+                    },
+                    textClick = {
+                        if (input_video_uri != null) {
+                           addTextToVideo("Helloooo")
+                        } else Toast.makeText(
+                            this@MainActivity,
+                            "Please upload video",
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
                     }
                 )
             }
@@ -193,6 +223,32 @@ class MainActivity : AppCompatActivity() {
                     handler.postDelayed(this, 1000)
                 }
             }, 0)
+        }
+
+        binding.editableText.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    // Lưu khoảng cách giữa tọa độ chạm và góc trái trên của view
+                    v.tag = Pair(event.rawX - v.x, event.rawY - v.y)
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val tag = v.tag as? Pair<Float, Float> ?: return@setOnTouchListener false
+                    val dX = tag.first
+                    val dY = tag.second
+
+                    // Cập nhật vị trí view dựa trên tọa độ chạm
+                    val parent = v.parent as View // FrameLayout hoặc container chứa TextView
+                    val newX = event.rawX - dX
+                    val newY = event.rawY - dY
+
+                    // Giới hạn di chuyển trong FrameLayout
+                    v.x = newX.coerceIn(0f, parent.width - v.width.toFloat())
+                    v.y = newY.coerceIn(0f, parent.height - v.height.toFloat())
+                    true
+                }
+                else -> false
+            }
         }
     }
 
@@ -254,6 +310,13 @@ class MainActivity : AppCompatActivity() {
         executeFfmpegCommand(exe, file.absolutePath)
     }
 
+    private fun addTextToVideo(text: String){
+        val folder = cacheDir
+        val file = File(folder, System.currentTimeMillis().toString() + ".mp4")
+        val exe = "-y -i $input_video_uri -vf drawtext=”fontsize=30:text='$text'”:x=w-tw-10:y=h-th-10 -c:v libx264 -preset ultrafast ${file.absolutePath}"
+        executeFfmpegCommand(exe, file.absolutePath)
+    }
+
     private fun executeFfmpegCommand(exe: String, filePath: String) {
 
         //creating the progress dialog
@@ -293,7 +356,8 @@ class MainActivity : AppCompatActivity() {
             }
         }, { log ->
             lifecycleScope.launch(Dispatchers.Main) {
-                progressDialog.setMessage("Applying Filter..${log.message}")
+                Log.d("","Applying Filter..${log.message}")
+                progressDialog.setMessage(getString(R.string.loading))
             }
         }) { statistics -> Log.d("STATS", statistics.toString()) }
     }
@@ -323,4 +387,12 @@ class MainActivity : AppCompatActivity() {
         return file.delete()
     }
 
+    private fun hideKeyboard(activity: Activity) {
+        val view = activity.currentFocus
+        if (view != null) {
+            val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
+            view.clearFocus()
+        }
+    }
 }

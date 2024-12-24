@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Video Editor</string>
+    <string name="loading">Loading…</string>
 </resources>

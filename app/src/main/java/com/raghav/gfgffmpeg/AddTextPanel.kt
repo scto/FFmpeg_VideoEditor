@@ -1,8 +1,11 @@
 package com.raghav.gfgffmpeg
 
 import android.R.attr.textColor
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -14,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 
 
 @Composable
@@ -28,23 +32,26 @@ fun AddTextPanel(
             onValueChange = {
                 onTextChange(it)
             },
-            label = { Text("Add your text") },
-            trailingIcon = {
-                if(text.isNotEmpty()){
-                    IconButton(onClick = { onClickDone(text) }) {
-                        Icon(Icons.Default.Done, contentDescription = null)
-                    }
-                }
-            },
+//            trailingIcon = {
+//                if(text.isNotEmpty()){
+//                    IconButton(onClick = { onClickDone(text) }) {
+//                        Icon(Icons.Default.Done, contentDescription = null)
+//                    }
+//                }
+//            },
             colors = TextFieldDefaults.textFieldColors(
                 textColor = Color.White,
-                focusedIndicatorColor = Color.White,
                 cursorColor = Color.White,
                 focusedLabelColor = Color.White,
                 unfocusedLabelColor = Color.White,
-                trailingIconColor = Color.Green
+                trailingIconColor = Color.Green,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
             ),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, Color.White, shape = RoundedCornerShape(8.dp))
+                .padding(2.dp)
         )
     }
 }

@@ -47,17 +47,35 @@
                 android:padding="15dp">
 
                 <!-- TextView hiển thị văn bản -->
-                <TextView
-                    android:background="@drawable/text_background"
-                    android:id="@+id/editableText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:textSize="18sp"
-                    android:textColor="@android:color/white"
-                    android:padding="10dp" />
+<!--                <TextView-->
+<!--                    android:background="@drawable/text_background"-->
+<!--                    android:id="@+id/editableText"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_gravity="center"-->
+<!--                    android:textSize="18sp"-->
+<!--                    android:textColor="@android:color/white"-->
+<!--                    android:padding="10dp" />-->
 
+                <androidx.compose.ui.platform.ComposeView
+                    android:id="@+id/compose_editableText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
             </FrameLayout>
+
+
+            <!-- Nút xóa -->
+            <ImageView
+                android:id="@+id/btnResize"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="start|top"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="5dp"
+                android:src="@drawable/icon_resize"
+                android:background="@drawable/circle_button_background"
+                android:backgroundTint="#3785FB"
+                android:padding="6dp" />
 
             <!-- Nút xóa -->
             <ImageView

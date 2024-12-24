@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity() {
                     text = newText
                 }, onClickDone = { newText ->
                     binding.editableContainer.visibility = View.VISIBLE
-                    binding.editableText.text = newText
+//                    binding.editableText.text = newText
                     hideKeyboard(this@MainActivity)
                     text = ""
                 })
@@ -189,17 +189,31 @@ class MainActivity : AppCompatActivity() {
                             .show()
                     },
                     textClick = {
-                        if (input_video_uri != null) {
-//                           addTextToVideo("Helloooo")
-                        } else Toast.makeText(
-                            this@MainActivity,
-                            "Please upload video",
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
+//                        if (input_video_uri != null) {
+////                           addTextToVideo("Helloooo")
+//                            binding.editableContainer.visibility = View.VISIBLE
+//                        } else Toast.makeText(
+//                            this@MainActivity,
+//                            "Please upload video",
+//                            Toast.LENGTH_LONG
+//                        )
+//                            .show()
+                        binding.editableContainer.visibility = View.VISIBLE
                     }
                 )
             }
+        }
+
+        binding.composeEditableText.setContent {
+            var text by remember { mutableStateOf("") }
+            AddTextPanel(text = text, onTextChange = { newText ->
+                text = newText
+            }, onClickDone = { newText ->
+                binding.editableContainer.visibility = View.VISIBLE
+//                    binding.editableText.text = newText
+                hideKeyboard(this@MainActivity)
+                text = ""
+            })
         }
 
         /*
@@ -253,7 +267,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnDelete.setOnClickListener {
             binding.editableContainer.visibility = View.GONE
-            binding.editableText.text = ""
+//            binding.editableText.text = ""
         }
     }
 

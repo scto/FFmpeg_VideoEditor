@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity() {
                 AddTextPanel(text = text, onTextChange = { newText ->
                     text = newText
                 }, onClickDone = { newText ->
-                    binding.editableText.visibility = View.VISIBLE
+                    binding.editableContainer.visibility = View.VISIBLE
                     binding.editableText.text = newText
                     hideKeyboard(this@MainActivity)
                     text = ""
@@ -190,7 +190,7 @@ class MainActivity : AppCompatActivity() {
                     },
                     textClick = {
                         if (input_video_uri != null) {
-                           addTextToVideo("Helloooo")
+//                           addTextToVideo("Helloooo")
                         } else Toast.makeText(
                             this@MainActivity,
                             "Please upload video",
@@ -225,7 +225,7 @@ class MainActivity : AppCompatActivity() {
             }, 0)
         }
 
-        binding.editableText.setOnTouchListener { v, event ->
+        binding.editableContainer.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     // Lưu khoảng cách giữa tọa độ chạm và góc trái trên của view
@@ -238,7 +238,7 @@ class MainActivity : AppCompatActivity() {
                     val dY = tag.second
 
                     // Cập nhật vị trí view dựa trên tọa độ chạm
-                    val parent = v.parent as View // FrameLayout hoặc container chứa TextView
+                    val parent = v.parent as View
                     val newX = event.rawX - dX
                     val newY = event.rawY - dY
 
@@ -249,6 +249,11 @@ class MainActivity : AppCompatActivity() {
                 }
                 else -> false
             }
+        }
+
+        binding.btnDelete.setOnClickListener {
+            binding.editableContainer.visibility = View.GONE
+            binding.editableText.text = ""
         }
     }
 

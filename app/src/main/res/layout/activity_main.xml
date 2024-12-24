@@ -33,15 +33,45 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <!-- Text overlay -->
-        <TextView
-            android:id="@+id/editableText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <FrameLayout
             android:visibility="gone"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:padding="8dp" />
+            android:id="@+id/editableContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <!-- Container cho TextView và viền -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:padding="15dp">
+
+                <!-- TextView hiển thị văn bản -->
+                <TextView
+                    android:background="@drawable/text_background"
+                    android:id="@+id/editableText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textSize="18sp"
+                    android:textColor="@android:color/white"
+                    android:padding="10dp" />
+
+            </FrameLayout>
+
+            <!-- Nút xóa -->
+            <ImageView
+                android:id="@+id/btnDelete"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="end|top"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="5dp"
+                android:src="@drawable/ic_delete"
+                android:background="@drawable/circle_button_background"
+                android:padding="6dp" />
+
+        </FrameLayout>
     </FrameLayout>
 
     <LinearLayout

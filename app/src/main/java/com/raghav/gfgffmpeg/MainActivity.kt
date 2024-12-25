@@ -15,6 +15,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -25,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
+import androidx.core.view.size
 import androidx.lifecycle.lifecycleScope
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.arthenica.ffmpegkit.FFmpegKitConfig
@@ -230,7 +232,7 @@ class MainActivity : AppCompatActivity() {
                     textClick = {
                         if (input_video_uri != null && pairXY != null) {
 //                            binding.editableContainer.visibility = View.VISIBLE
-                            addTextToVideo(binding.editableText.text.toString(), pairXY!!)
+                            addTextToVideo(binding.editableText, pairXY!!)
                         } else Toast.makeText(
                             this@MainActivity,
                             "Please upload video",
@@ -316,6 +318,29 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        binding.btnResize.setOnTouchListener(object : View.OnTouchListener {
+            var initialX = 0f
+            var initialSize = binding.editableText.textSize
+
+            override fun onTouch(view: View, event: MotionEvent): Boolean {
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        // Lưu vị trí ban đầu
+                        initialX = event.rawX
+                        return true
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        // Tính toán thay đổi kích thước
+                        val deltaX = event.rawX - initialX
+                        val newSize = (initialSize + deltaX / 10).coerceIn(10f, 100f) // Giới hạn từ 10sp đến 100sp
+                        binding.editableText.textSize = newSize
+                        return true
+                    }
+                }
+                return false
+            }
+        })
+
         binding.btnDelete.setOnClickListener {
             binding.editableContainer.visibility = View.GONE
             binding.editableText.text = ""
@@ -324,8 +349,6 @@ class MainActivity : AppCompatActivity() {
         binding.layoutAddAudio.setOnClickListener {
             audioPickerLauncher.launch(arrayOf("audio/*"))
         }
-
-
     }
 
     override fun onResume() {
@@ -409,12 +432,12 @@ class MainActivity : AppCompatActivity() {
         executeFfmpegCommand(exe, file.absolutePath)
     }
 
-    private fun addTextToVideo(text: String, pairXY: Pair<Float, Float>) {
+    private fun addTextToVideo(text: TextView, pairXY: Pair<Float, Float>) {
         val folder = cacheDir
         val file = File(folder, System.currentTimeMillis().toString() + ".mp4")
         val fontPath = getFontPath(this@MainActivity)
         val exe =
-            "-i $input_video_uri -vf \"drawtext=text='$text':fontfile='$fontPath':fontsize=30:x=${pairXY.first}:y=${pairXY.second}\" -codec:a copy ${file.absolutePath}"
+            "-i $input_video_uri -vf \"drawtext=text='${text.text}':fontfile='$fontPath':fontsize=${text.textSize}:x=${pairXY.first}:y=${pairXY.second}\" -codec:a copy ${file.absolutePath}"
         Log.d(javaClass.name, "font: $fontPath - text: $text - pairXY: ${pairXY.first} ${pairXY.second}")
         executeFfmpegCommand(exe, file.absolutePath)
     }

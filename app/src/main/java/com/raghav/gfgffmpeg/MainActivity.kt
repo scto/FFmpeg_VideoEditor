@@ -4,6 +4,9 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
+import android.content.Intent
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -21,6 +24,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.arthenica.ffmpegkit.FFmpegKitConfig
@@ -29,12 +33,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
 import java.io.InputStream
 import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
-
+    private var mediaPlayer: MediaPlayer? = null
     private var input_video_uri: String? = null
+    private var input_audio_uri: String? = null
+
+    private var audio_uri: Uri? = null
+    private var video_uri: Uri? = null
+
+    var pairXY: Pair<Float, Float>? = null
+
     lateinit var binding: ActivityMainBinding
     val handler = Handler(Looper.getMainLooper())
 
@@ -47,6 +60,7 @@ class MainActivity : AppCompatActivity() {
     private val selectVideoLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) {
             it?.let {
+                video_uri = it
                 input_video_uri = FFmpegKitConfig.getSafParameterForRead(this, it)
                 binding.videoView.setVideoURI(it)
 
@@ -81,6 +95,31 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+    private val audioPickerLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            binding.tvResultAudio.visibility = if (uri != null) View.VISIBLE else View.GONE
+            uri?.let {
+                audio_uri = FFmpegKitConfig.getSafParameterForRead(this, it).toUri()
+
+                Log.d(javaClass.name, "Selected File: ${uri.path}")
+                binding.tvResultAudio.text = "Selected File: ${uri.path}"
+                mediaPlayer?.release()
+                mediaPlayer = MediaPlayer().apply {
+                    try {
+                        setDataSource(this@MainActivity, it)
+                        prepare()
+                        start()
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
+
+    companion object {
+        private const val REQUEST_CODE_PICK_AUDIO = 1
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -118,7 +157,7 @@ class MainActivity : AppCompatActivity() {
                     text = newText
                 }, onClickDone = { newText ->
                     binding.editableContainer.visibility = View.VISIBLE
-//                    binding.editableText.text = newText
+                    binding.editableText.text = newText
                     hideKeyboard(this@MainActivity)
                     text = ""
                 })
@@ -189,32 +228,43 @@ class MainActivity : AppCompatActivity() {
                             .show()
                     },
                     textClick = {
-//                        if (input_video_uri != null) {
-////                           addTextToVideo("Helloooo")
+                        if (input_video_uri != null && pairXY != null) {
 //                            binding.editableContainer.visibility = View.VISIBLE
-//                        } else Toast.makeText(
-//                            this@MainActivity,
-//                            "Please upload video",
-//                            Toast.LENGTH_LONG
-//                        )
-//                            .show()
-                        binding.editableContainer.visibility = View.VISIBLE
-                    }
+                            addTextToVideo(binding.editableText.text.toString(), pairXY!!)
+                        } else Toast.makeText(
+                            this@MainActivity,
+                            "Please upload video",
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
+                    },
+                    audioClick = {
+                        if (input_video_uri != null && audio_uri != null) {
+                            Log.d(javaClass.name, "Video path: $input_video_uri")
+                            Log.d(javaClass.name, "audio_uri path: $audio_uri")
+                           mergeAudioVideo(audio_uri!!)
+                        } else Toast.makeText(
+                            this@MainActivity,
+                            "Please upload video",
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
+                    },
                 )
             }
         }
 
-        binding.composeEditableText.setContent {
-            var text by remember { mutableStateOf("") }
-            AddTextPanel(text = text, onTextChange = { newText ->
-                text = newText
-            }, onClickDone = { newText ->
-                binding.editableContainer.visibility = View.VISIBLE
+//        binding.composeEditableText.setContent {
+//            var text by remember { mutableStateOf("") }
+//            AddTextPanel(text = text, onTextChange = { newText ->
+//                text = newText
+//            }, onClickDone = { newText ->
+//                binding.editableContainer.visibility = View.VISIBLE
 //                    binding.editableText.text = newText
-                hideKeyboard(this@MainActivity)
-                text = ""
-            })
-        }
+//                hideKeyboard(this@MainActivity)
+//                text = ""
+//            })
+//        }
 
         /*
             set up the VideoView.
@@ -246,6 +296,7 @@ class MainActivity : AppCompatActivity() {
                     v.tag = Pair(event.rawX - v.x, event.rawY - v.y)
                     true
                 }
+
                 MotionEvent.ACTION_MOVE -> {
                     val tag = v.tag as? Pair<Float, Float> ?: return@setOnTouchListener false
                     val dX = tag.first
@@ -253,21 +304,48 @@ class MainActivity : AppCompatActivity() {
 
                     // Cập nhật vị trí view dựa trên tọa độ chạm
                     val parent = v.parent as View
-                    val newX = event.rawX - dX
-                    val newY = event.rawY - dY
+                    pairXY = Pair(event.rawX - dX, event.rawY - dY)
 
                     // Giới hạn di chuyển trong FrameLayout
-                    v.x = newX.coerceIn(0f, parent.width - v.width.toFloat())
-                    v.y = newY.coerceIn(0f, parent.height - v.height.toFloat())
+                    v.x = pairXY!!.first.coerceIn(0f, parent.width - v.width.toFloat())
+                    v.y = pairXY!!.second.coerceIn(0f, parent.height - v.height.toFloat())
                     true
                 }
+
                 else -> false
             }
         }
 
         binding.btnDelete.setOnClickListener {
             binding.editableContainer.visibility = View.GONE
-//            binding.editableText.text = ""
+            binding.editableText.text = ""
+        }
+
+        binding.layoutAddAudio.setOnClickListener {
+            audioPickerLauncher.launch(arrayOf("audio/*"))
+        }
+
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if(video_uri != null){
+            binding.videoView.setVideoURI(video_uri)
+            binding.videoView.start()
+        }
+
+        if(audio_uri != null){
+            mediaPlayer?.release()
+            mediaPlayer = MediaPlayer().apply {
+                try {
+                    setDataSource(this@MainActivity, audio_uri!!)
+                    prepare()
+                    start()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
         }
     }
 
@@ -315,24 +393,37 @@ class MainActivity : AppCompatActivity() {
         executeFfmpegCommand(exe, file.absolutePath)
     }
 
-    private fun videoGif(startMs: Int, endMs: Int){
+    private fun videoGif(startMs: Int, endMs: Int) {
         val folder = cacheDir
         val file = File(folder, System.currentTimeMillis().toString() + ".mp4")
-        val exe = "-y -ss ${startMs / 1000} -t ${(endMs - startMs) / 1000} -i $input_video_uri -t 10 -r 24 ${file.absolutePath}"
+        val exe =
+            "-y -ss ${startMs / 1000} -t ${(endMs - startMs) / 1000} -i $input_video_uri -t 10 -r 24 ${file.absolutePath}"
         executeFfmpegCommand(exe, file.absolutePath)
     }
 
-    private fun muteVideo(startMs: Int, endMs: Int){
+    private fun muteVideo(startMs: Int, endMs: Int) {
         val folder = cacheDir
         val file = File(folder, System.currentTimeMillis().toString() + ".mp4")
-        val exe = "-i $input_video_uri -af \"volume=enable='between(t, ${startMs / 1000}, ${endMs / 1000})':volume=0\" ${file.absolutePath}"
+        val exe =
+            "-i $input_video_uri -af \"volume=enable='between(t, ${startMs / 1000}, ${endMs / 1000})':volume=0\" ${file.absolutePath}"
         executeFfmpegCommand(exe, file.absolutePath)
     }
 
-    private fun addTextToVideo(text: String){
+    private fun addTextToVideo(text: String, pairXY: Pair<Float, Float>) {
         val folder = cacheDir
         val file = File(folder, System.currentTimeMillis().toString() + ".mp4")
-        val exe = "-y -i $input_video_uri -vf drawtext=”fontsize=30:text='$text'”:x=w-tw-10:y=h-th-10 -c:v libx264 -preset ultrafast ${file.absolutePath}"
+        val fontPath = getFontPath(this@MainActivity)
+        val exe =
+            "-i $input_video_uri -vf \"drawtext=text='$text':fontfile='$fontPath':fontsize=30:x=${pairXY.first}:y=${pairXY.second}\" -codec:a copy ${file.absolutePath}"
+        Log.d(javaClass.name, "font: $fontPath - text: $text - pairXY: ${pairXY.first} ${pairXY.second}")
+        executeFfmpegCommand(exe, file.absolutePath)
+    }
+
+    private fun mergeAudioVideo(uri: Uri) {
+        val folder = cacheDir
+        val file = File(folder, System.currentTimeMillis().toString() + ".mp4")
+        val exe =
+            "-i $input_video_uri -i $uri -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -shortest  ${file.absolutePath}"
         executeFfmpegCommand(exe, file.absolutePath)
     }
 
@@ -375,7 +466,7 @@ class MainActivity : AppCompatActivity() {
             }
         }, { log ->
             lifecycleScope.launch(Dispatchers.Main) {
-                Log.d("","Applying Filter..${log.message}")
+                Log.d("", "Applying Filter..${log.message}")
                 progressDialog.setMessage(getString(R.string.loading))
             }
         }) { statistics -> Log.d("STATS", statistics.toString()) }
@@ -386,6 +477,8 @@ class MainActivity : AppCompatActivity() {
         if (!isChangingConfigurations) {
             deleteTempFiles(cacheDir)
         }
+        mediaPlayer?.release()
+        mediaPlayer = null
     }
 
     /*
@@ -413,5 +506,17 @@ class MainActivity : AppCompatActivity() {
             imm.hideSoftInputFromWindow(view.windowToken, 0)
             view.clearFocus()
         }
+    }
+
+    private fun getFontPath(context: Context): String {
+        val fontFile = File(context.filesDir, "overpass_regular.ttf")
+        if (!fontFile.exists()) {
+            context.resources.openRawResource(R.raw.overpass_regular).use { inputStream ->
+                FileOutputStream(fontFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+        }
+        return fontFile.absolutePath
     }
 }

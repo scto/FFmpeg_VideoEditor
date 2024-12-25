@@ -47,20 +47,20 @@
                 android:padding="15dp">
 
                 <!-- TextView hiển thị văn bản -->
-<!--                <TextView-->
-<!--                    android:background="@drawable/text_background"-->
-<!--                    android:id="@+id/editableText"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_gravity="center"-->
-<!--                    android:textSize="18sp"-->
-<!--                    android:textColor="@android:color/white"-->
-<!--                    android:padding="10dp" />-->
-
-                <androidx.compose.ui.platform.ComposeView
-                    android:id="@+id/compose_editableText"
+                <TextView
+                    android:background="@drawable/text_background"
+                    android:id="@+id/editableText"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textSize="18sp"
+                    android:textColor="@android:color/white"
+                    android:padding="10dp" />
+
+<!--                <androidx.compose.ui.platform.ComposeView-->
+<!--                    android:id="@+id/compose_editableText"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content" />-->
             </FrameLayout>
 
 
@@ -98,6 +98,34 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/layout_add_audio"
+            android:orientation="vertical"
+            android:background="@drawable/buttonradius"
+            android:backgroundTint="#AAAABB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="15dp"
+            android:layout_marginVertical="10dp"
+            android:layout_marginHorizontal="5dp"
+            android:paddingVertical="5dp">
+            <TextView
+                android:text="@string/add_audio"
+                android:textColor="@color/black"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:drawableStartCompat="@drawable/icon_add" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_result_audio"
+            android:visibility="gone"
+            android:textColor="@color/white"
+            android:layout_marginVertical="10dp"
+            android:layout_marginHorizontal="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
         <androidx.compose.ui.platform.ComposeView
             android:id="@+id/compose_control_panel"

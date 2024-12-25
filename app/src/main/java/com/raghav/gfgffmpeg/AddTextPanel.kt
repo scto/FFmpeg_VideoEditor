@@ -4,6 +4,7 @@ import android.R.attr.textColor
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -32,13 +33,14 @@ fun AddTextPanel(
             onValueChange = {
                 onTextChange(it)
             },
-//            trailingIcon = {
-//                if(text.isNotEmpty()){
-//                    IconButton(onClick = { onClickDone(text) }) {
-//                        Icon(Icons.Default.Done, contentDescription = null)
-//                    }
-//                }
-//            },
+            placeholder = {"Add your text"},
+            trailingIcon = {
+                if(text.isNotEmpty()){
+                    IconButton(onClick = { onClickDone(text) }) {
+                        Icon(Icons.Default.Done, contentDescription = null)
+                    }
+                }
+            },
             colors = TextFieldDefaults.textFieldColors(
                 textColor = Color.White,
                 cursorColor = Color.White,
@@ -50,6 +52,7 @@ fun AddTextPanel(
             ),
             modifier = Modifier
                 .fillMaxWidth()
+                .height(50.dp)
                 .border(1.dp, Color.White, shape = RoundedCornerShape(8.dp))
                 .padding(2.dp)
         )

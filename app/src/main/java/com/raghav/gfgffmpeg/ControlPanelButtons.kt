@@ -30,29 +30,31 @@ fun ControlPanelButtons(
     gifClick: () -> Unit,
     muteClick: () -> Unit,
     textClick: () -> Unit,
+    audioClick: () -> Unit,
 ) {
     Column {
         Text("Tap to add effects", style = TextStyle(color = Color.White, fontSize = 14.sp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 10.dp),
+                .padding(vertical = 5.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             SingleToolIcon(R.drawable.icon_effect_slow, "Slow Motion") { slowClick() }
             SingleToolIcon(R.drawable.icon_effect_time, "Reverse") { reverseClick() }
             SingleToolIcon(R.drawable.icon_effect_repeatedly, "Flash") { flashClick() }
+            SingleToolIcon(R.drawable.icon_effect_mute, "Mute video") { muteClick() }
         }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 10.dp),
+                .padding(vertical = 5.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             SingleToolIcon(R.drawable.icon_effect_gif, "Video to gif") { gifClick() }
-            SingleToolIcon(R.drawable.icon_effect_mute, "Mute video") { muteClick() }
+            SingleToolIcon(R.drawable.icon_effect_audio, "Mute video") { audioClick() }
             SingleToolIcon(R.drawable.icon_effect_text, "Add text") { textClick() }
         }
     }
@@ -66,11 +68,10 @@ fun SingleToolIcon(@DrawableRes icon: Int, text: String, onClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            modifier = Modifier.size(50.dp),
+            modifier = Modifier.size(30.dp),
             painter = painterResource(icon),
             contentDescription = null
         )
-        Spacer(modifier = Modifier.height(4.dp))
         Text(text, style = TextStyle(color = Color.White, fontSize = 14.sp))
     }
 }
@@ -79,5 +80,5 @@ fun SingleToolIcon(@DrawableRes icon: Int, text: String, onClick: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun ControlPanelButtonsPreview() {
-    ControlPanelButtons({}, {}, {}, {}, {}, {})
+    ControlPanelButtons({}, {}, {}, {}, {}, {}, {})
 }

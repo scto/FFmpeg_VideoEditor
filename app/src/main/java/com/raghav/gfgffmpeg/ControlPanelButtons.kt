@@ -31,6 +31,7 @@ fun ControlPanelButtons(
     muteClick: () -> Unit,
     textClick: () -> Unit,
     audioClick: () -> Unit,
+    multipleClick: () -> Unit,
 ) {
     Column {
         Text("Tap to add effects", style = TextStyle(color = Color.White, fontSize = 14.sp))
@@ -56,6 +57,7 @@ fun ControlPanelButtons(
             SingleToolIcon(R.drawable.icon_effect_gif, "Video to gif") { gifClick() }
             SingleToolIcon(R.drawable.icon_effect_audio, "Mute video") { audioClick() }
             SingleToolIcon(R.drawable.icon_effect_text, "Add text") { textClick() }
+            SingleToolIcon(R.drawable.ic_effect_multiple, "Multiple video") { multipleClick() }
         }
     }
 }
@@ -80,5 +82,5 @@ fun SingleToolIcon(@DrawableRes icon: Int, text: String, onClick: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun ControlPanelButtonsPreview() {
-    ControlPanelButtons({}, {}, {}, {}, {}, {}, {})
+    ControlPanelButtons({}, {}, {}, {}, {}, {}, {}, {})
 }

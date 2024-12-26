@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
-import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
@@ -14,7 +13,6 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,10 +24,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
-import androidx.core.view.size
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.arthenica.ffmpegkit.FFmpegKitConfig
+import com.raghav.gfgffmpeg.adapter.VideoAdapter
 import com.raghav.gfgffmpeg.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -58,12 +58,24 @@ class MainActivity : AppCompatActivity() {
     var videoSelectedLowerVal = mutableFloatStateOf(0f)
     var videoSelectedUpperVal = mutableFloatStateOf(1f)
 
+    private lateinit var videoAdapter: VideoAdapter
+    private val videoPaths = mutableListOf<String>()
+    private val videoUriPaths = mutableListOf<String>()
+
     //create an intent launcher to retrieve the video file from the device storage
     private val selectVideoLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) {
             it?.let {
                 video_uri = it
                 input_video_uri = FFmpegKitConfig.getSafParameterForRead(this, it)
+
+                videoPaths.add(video_uri.toString())
+                videoUriPaths.add(input_video_uri!!)
+
+                Log.d(javaClass.name, "videoPaths: $videoPaths")
+
+                videoAdapter.notifyItemInserted(videoPaths.size - 1)
+
                 binding.videoView.setVideoURI(it)
 
                 //after successful retrieval of the video and properly setting up the retried video uri in
@@ -128,6 +140,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Khởi tạo RecyclerView
+        videoAdapter = VideoAdapter(videoPaths, onClickVideo = {
+            binding.videoView.setVideoURI(it.toUri())
+            binding.videoView.start()
+        })
 
         binding.composeTopBar.setContent {
             TopBar(selectClick = {
@@ -252,21 +270,20 @@ class MainActivity : AppCompatActivity() {
                         )
                             .show()
                     },
+                    multipleClick = {
+                        if(videoPaths.isNotEmpty()){
+                            multipleVideo()
+                        } else Toast.makeText(
+                            this@MainActivity,
+                            "Please upload video",
+
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
+                    }
                 )
             }
         }
-
-//        binding.composeEditableText.setContent {
-//            var text by remember { mutableStateOf("") }
-//            AddTextPanel(text = text, onTextChange = { newText ->
-//                text = newText
-//            }, onClickDone = { newText ->
-//                binding.editableContainer.visibility = View.VISIBLE
-//                    binding.editableText.text = newText
-//                hideKeyboard(this@MainActivity)
-//                text = ""
-//            })
-//        }
 
         /*
             set up the VideoView.
@@ -348,6 +365,16 @@ class MainActivity : AppCompatActivity() {
 
         binding.layoutAddAudio.setOnClickListener {
             audioPickerLauncher.launch(arrayOf("audio/*"))
+        }
+
+        binding.rvVideos.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity, RecyclerView.HORIZONTAL, false)
+            adapter = videoAdapter
+        }
+
+        binding.btnAddVideo.setOnClickListener {
+            handler.removeCallbacksAndMessages(null)
+            selectVideoLauncher.launch("video/*")
         }
     }
 
@@ -541,5 +568,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return fontFile.absolutePath
+    }
+
+    private fun multipleVideo(){
+        val folder = cacheDir
+        val file = File(folder, System.currentTimeMillis().toString() + ".mp4")
+        var filterComplex = ""
+        var concatInputs = ""
+        for (index in videoUriPaths.indices){
+            concatInputs += "-i ${videoUriPaths[index]} "
+            filterComplex += "[$index:v] [$index:a] "
+        }
+        filterComplex += "concat=n=${videoUriPaths.size}:v=1:a=1 [v] [a]"
+
+        val exe = "$concatInputs -filter_complex \"$filterComplex\" -map \"[v]\" -map \"[a]\" ${file.absolutePath}"
+        Log.d(javaClass.name, "exe: $exe")
+        executeFfmpegCommand(exe, file.absolutePath)
     }
 }
